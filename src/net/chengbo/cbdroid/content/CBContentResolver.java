@@ -15,6 +15,8 @@ public abstract class CBContentResolver<T> {
 	private String mErrorDescription;
 	private Exception mException;
 
+	private boolean mIsVisible;
+
 	private ContentObserver mObserver;
 
 	/**
@@ -110,6 +112,25 @@ public abstract class CBContentResolver<T> {
 	}
 
 	/**
+	 * 设置当前{@link CBContentResolver}实例所在的View是否是显示状态，只有在显示状态，才会执行
+	 * {@link #onLoaded(Object)}，{@link #onPostLoaded(Object)}或
+	 * {@link #onError(String, String)}方法。
+	 * 
+	 * @param isVisible 是否处于显示状态。
+	 */
+	public void setVisible(boolean isVisible) {
+		mIsVisible = isVisible;
+	}
+
+	/**
+	 * 获取当前是否处于显示状态。
+	 * @return 是否处于显示状态，<code>true</code>表示处于，反之<code>false</code>不处于。
+	 */
+	public boolean isVisible() {
+		return mIsVisible;
+	}
+
+	/**
 	 * 开始异步查询数据。
 	 */
 	public void startQuery() {
@@ -142,6 +163,9 @@ public abstract class CBContentResolver<T> {
 
 			@Override
 			protected void onPostExecute(T result) {
+				if (!mIsVisible) {
+					return;
+				}
 				if (mHasError) {
 					onError(mErrorCode, mErrorDescription);
 				} else {
